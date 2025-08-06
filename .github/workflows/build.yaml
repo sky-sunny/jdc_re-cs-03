@@ -98,6 +98,7 @@ jobs:
       - name: Build firmware
         run: |
           make download -j$(nproc) V=s
+          make check -j$(nproc) FIXUP=1 V=s
           make -j$(nproc) || make -j1 V=s  # Retry single-threaded on failure
 
       - name: Upload artifacts
