@@ -68,6 +68,7 @@ jobs:
       - name: cache
         uses: actions/cache@v4
         with:
+          key: openwrt-build
           path: |
             build_dir
             dl
@@ -118,6 +119,7 @@ jobs:
           make download -j$(nproc) V=s
           make check -j$(nproc) FIXUP=1 V=s
           make -j$(nproc) || make -j1 V=s  # Retry single-threaded on failure
+          tar -C bin/targets/qualcommax/ipq50xx cvzf packages.tar.gz packages
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
