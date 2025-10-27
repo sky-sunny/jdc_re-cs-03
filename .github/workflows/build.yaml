@@ -89,14 +89,17 @@ jobs:
       - name: cache
         uses: actions/cache@v4
         with:
-          key: openwrt-build
+          key: openwrt-build-${{ steps.get-date.outputs.date }}
           path: |
             build_dir
             dl
             feeds
             staging_dir
             tmp
-          
+          restore-keys: |
+            openwrt-build-${{ steps.get-date.outputs.date }}
+            openwrt-build
+            
       - name: Update and install feeds
         run: |
           df -h
