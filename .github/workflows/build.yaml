@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
   #push:
   schedule:
-    - cron: "0 */2 * * *"
+    - cron: "0 */4 * * *"
 
 env:
   REMOTE_REPOSITORY: openwrt/openwrt
@@ -65,17 +65,6 @@ jobs:
         with:
           path: "builder_repo"
           
-      - name: cache
-        uses: actions/cache@v4
-        with:
-          key: openwrt-build
-          path: |
-            build_dir
-            dl
-            feeds
-            staging_dir
-            tmp
-          
       - name: Add custom patches
         run: |
           df -h
@@ -97,6 +86,17 @@ jobs:
           ls -al re-cs-03-nss.patch && sha256sum re-cs-03-nss.patch
           git apply --verbose --ignore-space-change re-cs-03-nss.patch
 
+      - name: cache
+        uses: actions/cache@v4
+        with:
+          key: openwrt-build
+          path: |
+            build_dir
+            dl
+            feeds
+            staging_dir
+            tmp
+          
       - name: Update and install feeds
         run: |
           df -h
