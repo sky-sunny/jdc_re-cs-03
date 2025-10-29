@@ -85,23 +85,6 @@ jobs:
           curl -H "Authorization: token ${PAT_TOKEN}" -OL "https://raw.githubusercontent.com/pmyy-wt/jdcloud_re-cs-03/refs/heads/main/re-cs-03-nss.patch"
           ls -al re-cs-03-nss.patch && sha256sum re-cs-03-nss.patch
           git apply --verbose --ignore-space-change re-cs-03-nss.patch
-          
-      - name: Mount build_dir Overlay to /mnt
-        run: |
-          df -h
-          mkdir -p build_dir
-          sudo mkdir -p /mnt/upper /mnt/work && sudo mount -t overlay -olowerdir=$(pwd)/build_dir,upperdir=/mnt/upper,workdir=/mnt/work overlay $(pwd)/build_dir && sudo chmod a+w build_dir
-
-      - name: cache
-        uses: actions/cache@v4
-        with:
-          key: openwrt-build
-          path: |
-            dl
-            feeds
-            staging_dir
-            tmp
-            build_dir
             
       - name: Update and install feeds
         run: |
@@ -123,6 +106,23 @@ jobs:
           make defconfig -j$(nproc)
           mkdir -p ${{ env.CUSTOM_FILES_PATH }}
           [ -d "builder_repo/${{ env.CUSTOM_FILES_PATH }}" ] && mv builder_repo/${{ env.CUSTOM_FILES_PATH }}* ${{ env.CUSTOM_FILES_PATH }} || true
+          
+      - name: Use /mnt for more disk space
+        run: |
+          df -h
+          sudo mkdir -p /mnt/upper /mnt/work && sudo chmod a+w /mnt/upper
+          sudo mount -t overlay -olowerdir=$(pwd),upperdir=/mnt/upper,workdir=/mnt/work overlay $(pwd) && df -h
+
+      - name: cache
+        uses: actions/cache@v4
+        with:
+          key: openwrt-build
+          path: |
+            build_dir
+            dl
+            feeds
+            staging_dir
+            tmp
 
       - name: Download packages
         run: |
