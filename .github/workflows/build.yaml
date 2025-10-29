@@ -86,11 +86,11 @@ jobs:
           ls -al re-cs-03-nss.patch && sha256sum re-cs-03-nss.patch
           git apply --verbose --ignore-space-change re-cs-03-nss.patch
           
-      - name: Link build_dir to /mnt
+      - name: Mount build_dir Overlay to /mnt
         run: |
           df -h
-          sudo mkdir -p /mnt/build_dir && sudo chmod 777 /mnt/build_dir
-          ln -s /mnt/build_dir build_dir && ls -al build_dir build_dir/
+          mkdir -p build_dir
+          sudo mkdir -p /mnt/upper /mnt/work && sudo mount -t overlay -olowerdir=$(pwd)/build_dir,upperdir=/mnt/upper,workdir=/mnt/work overlay $(pwd)/build_dir && sudo chmod a+w build_dir
 
       - name: cache
         uses: actions/cache@v4
@@ -101,7 +101,7 @@ jobs:
             feeds
             staging_dir
             tmp
-            /mnt/build_dir
+            build_dir
             
       - name: Update and install feeds
         run: |
