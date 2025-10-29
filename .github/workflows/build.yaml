@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
   #push:
   schedule:
-    - cron: "0 */4 * * *"
+    - cron: "0 */3 * * *"
 
 env:
   REMOTE_REPOSITORY: openwrt/openwrt
@@ -90,21 +90,18 @@ jobs:
         run: |
           df -h
           sudo mkdir -p /mnt/build_dir && sudo chmod 777 /mnt/build_dir
-          ln -s /mnt/build_dir build_dir && ls -al build_dir
+          ln -s /mnt/build_dir build_dir && ls -al build_dir build_dir/
 
       - name: cache
         uses: actions/cache@v4
         with:
-          key: openwrt-build-${{ steps.get-date.outputs.date }}
+          key: openwrt-build
           path: |
-            build_dir
             dl
             feeds
             staging_dir
             tmp
-          restore-keys: |
-            openwrt-build-${{ steps.get-date.outputs.date }}
-            openwrt-build
+            /mnt/build_dir
             
       - name: Update and install feeds
         run: |
@@ -137,8 +134,7 @@ jobs:
           df -h
           make check -j$(nproc) FIXUP=1 V=s
           make -j$(nproc) || make -j1 V=s  # Retry single-threaded on failure
-          tar cvzf bin/targets/qualcommax/ipq50xx/packages.tar.gz -C bin/targets/qualcommax/ipq50xx packages
-          tar cvzf bin/targets/qualcommax/ipq50xx/aarch64_cortex-a53.tar.gz -C bin/packages/aarch64_cortex-a53 .
+          tar cvzf bin/targets/qualcommax/ipq50xx/snapshots.tar.gz -C bin packages/aarch64_cortex-a53 targets/qualcommax/ipq50xx/packages
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
