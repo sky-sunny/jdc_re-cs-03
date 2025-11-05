@@ -108,6 +108,12 @@ jobs:
           mkdir -p ${{ env.CUSTOM_FILES_PATH }}
           [ -d "builder_repo/${{ env.CUSTOM_FILES_PATH }}" ] && mv builder_repo/${{ env.CUSTOM_FILES_PATH }}* ${{ env.CUSTOM_FILES_PATH }} || true
 
+      - name: Use /mnt for more disk space
+        run: |
+          df -h
+          sudo mkdir -p /mnt/upper /mnt/work && sudo chmod a+w /mnt/upper
+          sudo mount -t overlay -olowerdir=$(pwd),upperdir=/mnt/upper,workdir=/mnt/work overlay $(pwd) && df -h
+
       - name: Restore cache from previous build
         uses: actions/cache@v4
         with:
@@ -120,12 +126,6 @@ jobs:
             feeds
             staging_dir
             tmp
-
-      - name: Use /mnt for more disk space
-        run: |
-          df -h
-          sudo mkdir -p /mnt/upper /mnt/work && sudo chmod a+w /mnt/upper
-          sudo mount -t overlay -olowerdir=$(pwd),upperdir=/mnt/upper,workdir=/mnt/work overlay $(pwd) && df -h
 
       - name: Download packages
         run: |
