@@ -107,23 +107,25 @@ jobs:
           make defconfig -j$(nproc)
           mkdir -p ${{ env.CUSTOM_FILES_PATH }}
           [ -d "builder_repo/${{ env.CUSTOM_FILES_PATH }}" ] && mv builder_repo/${{ env.CUSTOM_FILES_PATH }}* ${{ env.CUSTOM_FILES_PATH }} || true
-          
-      - name: Use /mnt for more disk space
-        run: |
-          df -h
-          sudo mkdir -p /mnt/upper /mnt/work && sudo chmod a+w /mnt/upper
-          sudo mount -t overlay -olowerdir=$(pwd),upperdir=/mnt/upper,workdir=/mnt/work overlay $(pwd) && df -h
 
-      - name: cache
+      - name: Restore cache from previous build
         uses: actions/cache@v4
         with:
-          key: openwrt-build
+          key: openwrt-build-${{ needs.check_commits.outputs.latest_commit_sha }}
+          restore-keys: |
+            openwrt-build
           path: |
             build_dir
             dl
             feeds
             staging_dir
             tmp
+
+      - name: Use /mnt for more disk space
+        run: |
+          df -h
+          sudo mkdir -p /mnt/upper /mnt/work && sudo chmod a+w /mnt/upper
+          sudo mount -t overlay -olowerdir=$(pwd),upperdir=/mnt/upper,workdir=/mnt/work overlay $(pwd) && df -h
 
       - name: Download packages
         run: |
@@ -144,6 +146,7 @@ jobs:
           path: bin/targets/qualcommax/ipq50xx
 
       - name: Check disk space usage
+        if: always()
         run: df -h
         
   release:
