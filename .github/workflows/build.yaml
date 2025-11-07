@@ -91,8 +91,6 @@ jobs:
           df -h
           #echo 'src-git custom https://github.com/kiddin9/kwrt-packages' >> feeds.conf.default
           ./scripts/feeds update -a && ./scripts/feeds install -a -p luci && ./scripts/feeds install -a -p packages
-          sed -i -e '/CMAKE_INSTALL/a\\nCMAKE_OPTIONS += -DCMAKE_POLICY_VERSION_MINIMUM=3.5' package/feeds/packages/libnatpmp/Makefile
-          sed -i -e '/DLWS_WITH_ULOOP/a\\nCMAKE_OPTIONS += -DCMAKE_POLICY_VERSION_MINIMUM=3.5' package/feeds/packages/libwebsockets/Makefile
           #git clone https://github.com/xiaorouji/openwrt-passwall2.git package/feeds/luci/luci-app-passwall2
           #git clone https://github.com/xiaorouji/openwrt-passwall-packages.git package/utils/passwall2
           git clone https://github.com/jerrykuku/luci-theme-argon.git package/feeds/luci/luci-theme-argon
@@ -135,6 +133,8 @@ jobs:
           make download -j$(nproc)
           
       - name: Build firmware
+        env: 
+          CMAKE_POLICY_VERSION_MINIMUM: 3.5
         run: |
           df -h
           make check -j$(nproc) FIXUP=1 V=s
