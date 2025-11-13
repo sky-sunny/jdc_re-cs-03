@@ -130,6 +130,7 @@ jobs:
       - name: Download packages
         run: |
           df -h
+          ./scripts/feeds update -a
           make download -j$(nproc)
           
       - name: Build firmware
