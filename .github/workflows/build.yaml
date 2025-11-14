@@ -210,6 +210,6 @@ jobs:
         run: |
           df -h
           gh api repos/${{ github.repository }}/releases --paginate --jq '.[5:] | .[] | "\(.id) \(.tag_name)"' | while read id tag; do
-            echo "Removing old release $key ..."
+            echo "Removing old release $tag ..."
             gh api -X DELETE "repos/${{ github.repository }}/releases/$id" && gh api -X DELETE "repos/${{ github.repository }}/git/refs/tags/$tag" 2>/dev/null || true
           done
