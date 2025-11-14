@@ -123,7 +123,6 @@ jobs:
           path: |
             build_dir
             dl
-            feeds
             staging_dir
             tmp
 
