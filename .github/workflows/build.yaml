@@ -67,10 +67,11 @@ jobs:
           
       - name: Add custom patches
         run: |
-          df -h
+          df -hT
           if [ -d "builder_repo/patches" ] && [ "$(ls -A builder_repo/patches 2>/dev/null)" ]; then
             mv builder_repo/patches/* ./
             for patch in *.patch; do
+              echo "Applying patch $patch ..."
               [ -f "$patch" ] && git apply --verbose "$patch"
             done
           fi
@@ -80,15 +81,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PAT_TOKEN: ${{ secrets.FETCH }}
         run: |
-          df -h
+          df -hT
           #gh api -H "Accept: application/vnd.github.raw+json" /repos/pmyy-wt/jdcloud_re-cs-03/contents/re-cs-03-nss.patch --jq '.content' -F ref=main | base64 --decode > re-cs-03-nss.patch
-          curl -H "Authorization: token ${PAT_TOKEN}" -OL "https://raw.githubusercontent.com/pmyy-wt/jdcloud_re-cs-03/3fc48056a27126e9d8ad4eb7d028aa4f6d36a0a1/re-cs-03-nss.patch"
+          curl -H "Authorization: token ${PAT_TOKEN}" -OL "https://raw.githubusercontent.com/pmyy-wt/jdcloud_re-cs-03/6d16b417576deb625249cc1ad641c62e3e75d933/re-cs-03-mainline.patch"
           ls -al re-cs-03-nss.patch && sha256sum re-cs-03-nss.patch
           git apply --verbose --ignore-space-change re-cs-03-nss.patch
             
       - name: Update and install feeds
         run: |
-          df -h
+          df -hT
           #echo 'src-git custom https://github.com/kiddin9/kwrt-packages' >> feeds.conf.default
           ./scripts/feeds update -a && ./scripts/feeds install -a -p luci && ./scripts/feeds install -a -p packages
           #git clone https://github.com/xiaorouji/openwrt-passwall2.git package/feeds/luci/luci-app-passwall2
@@ -102,7 +103,7 @@ jobs:
 
       - name: Setup configuration and custom files
         run: |
-          df -h
+          df -hT
           mv builder_repo/${{ env.CONFIG_FILE }} .config
           make defconfig -j$(nproc)
           mkdir -p ${{ env.CUSTOM_FILES_PATH }}
@@ -112,7 +113,7 @@ jobs:
         if: always()
         run: |
           sudo mkdir -p /mnt/upper /mnt/work && sudo chmod a+w /mnt/upper
-          sudo mount -t overlay -olowerdir=$(pwd),upperdir=/mnt/upper,workdir=/mnt/work overlay $(pwd) && df -h
+          sudo mount -t overlay -olowerdir=$(pwd),upperdir=/mnt/upper,workdir=/mnt/work overlay $(pwd) && df -hT
 
       - name: Restore cache from previous build
         uses: actions/cache@v4
@@ -129,7 +130,7 @@ jobs:
 
       - name: Download packages
         run: |
-          df -h
+          df -hT
           ./scripts/feeds update -a
           make download -j$(nproc)
           
@@ -137,7 +138,7 @@ jobs:
         env: 
           CMAKE_POLICY_VERSION_MINIMUM: 3.5
         run: |
-          df -h
+          df -hT
           make check -j$(nproc) FIXUP=1 V=s
           make -j$(nproc) || make -j1 V=s  # Retry single-threaded on failure
           tar cvzf bin/targets/qualcommax/ipq50xx/snapshots.tar.gz -C bin packages/aarch64_cortex-a53 targets/qualcommax/ipq50xx/packages
@@ -150,7 +151,7 @@ jobs:
 
       - name: Check disk space usage
         if: always()
-        run: df -h
+        run: df -hT
         
   release:
     name: Create release
@@ -209,7 +210,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          df -h
+          df -hT
           gh api repos/${{ github.repository }}/releases --paginate --jq '.[5:] | .[] | "\(.id) \(.tag_name)"' | while read id tag; do
             echo "Removing old release $tag ..."
             gh api -X DELETE "repos/${{ github.repository }}/releases/$id" && gh api -X DELETE "repos/${{ github.repository }}/git/refs/tags/$tag" 2>/dev/null || true
