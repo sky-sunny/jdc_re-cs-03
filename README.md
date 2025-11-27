@@ -1,51 +1,65 @@
-# Qualcommax NSS Builder
+# 京东云AX3000路由器CI自动编译固件
 
-This project automates the process of building OpenWrt firmware images for the Qualcomm IPQ807x platform, specifically targeting the Xiaomi AX3600 router. The build process incorporates various optimizations, hardening options, and quality-of-life enhancements. 
+本项目自动编译京东云后羿(/哪吒) ，型号RE-CS-03(IPQ5018平台)的固件，OpenWRT官方源码。
 
-## Features
+## 特点
 
-- Automated build process triggered by new commits in the [remote repository](https://github.com/qosmio/openwrt-ipq) or manual workflow dispatch
-- Compiler optimizations for improved performance
-- Hardening build options for enhanced security
-- SSH configuration with strong algorithms and key exchange methods. Refer to the [`ssh_hardening.config`](files/etc/ssh/sshd_config.d/ssh_hardening.conf)
-- Additional useful packages. Refer to the [`ax3600.config`](ax3600.config)
-- Full NSS (Network Subsystem) support 
-- Quality-of-life enhancements through UCI configuration
+- [OpenWRT](https://github.com/openwrt/openwrt)官方源码，和设备专用补丁
+- 全功能OpenSSH
+- 编译全部KMOD安装包，确保安装软件不缺依赖，KMOD安装包在压缩包文件snapshots.tar.gz中
+- 没有NSS加速功能，其他功能都正常
 
-## Build Process
+## 刷机
 
-The build process is automated using GitHub Actions and consists of the following steps:
+刷机需要拆机用TTL刷，详细方法过程参考恩山的[帖子](https://www.right.com.cn/forum/forum.php?mod=viewthread&tid=8428102)。
 
-1. Check for new commits in the [remote repository](https://github.com/qosmio/openwrt-ipq)
-2. Install the necessary dependencies
-3. Checkout the [remote repository](https://github.com/qosmio/openwrt-ipq) and the current repository
-4. Update and install the OpenWrt feeds
-5. Apply the [NSS status patch](patches/999-add-nss-load-to-status.patch) by [qosmio](https://github.com/qosmio)
-6. Configure the firmware image using the provided configuration file
-7. Include SSH hardening configuration and QOL-Enhancements
-8. Build the firmware image
-9. Package the output and upload the artifacts
-10. Create a new release with the updated prebuilt images
+1. 拆机，连接TTL线，网线插到WAN口，配置好终端和TFPTD64，插电
+2. TTL终端输入jdqca中断启动过程
+3. 刷入uboot，不需要刷大分区
+4. 断电后按住JOY插电，web进入刷机界面刷入[Release](https://github.com/pmyy-wt/jdc_re-cs-03/releases/latest)的factory.bin
 
-## Configuration
+UBoot刷好之后都可以按上面步骤4进入web刷机界面
 
-The project utilizes a custom configuration file [`ax3600.config`](ax3600.config) to specify the desired settings for the firmware build. This file includes various options such as target platform, compiler optimizations, package selections, and more.
+固件刷好后，可以在Luci的升级界面刷入sysupgrade.bin进行固件更新
 
-Additionally, the `uci` commands in the "Quality-of-Life Enhancements" section are used to fine-tune the wireless and network settings for improved performance and functionality. Refer to the [999-QOL_config](https://github.com/JuliusBairaktaris/Qualcommax_NSS_Builder/blob/main/files/etc/uci-defaults/999-QOL_config) for the specific configuration. 
+## 有用的UBOOT指令
 
-## SSH Hardening
-
-To enhance the security of SSH connections, the project includes a hardened SSH configuration. The configuration is derived from recommendations by [SSH-Audit](https://github.com/jtesta/ssh-audit) and the [BSI](https://www.bsi.bund.de/), it specifies strong key exchange algorithms, ciphers, message authentication codes (MACs), host key algorithms, and public key algorithms. This ensures that only secure and up-to-date algorithms are used for SSH communication.
-
-
-## Contributing
-
-Contributions to this project are welcome. If you encounter any issues or have suggestions for improvements, please open an issue or submit a pull request on the GitHub repository.
-
-## Acknowledgements
-
-- The OpenWrt project for providing the foundation for this firmware build.
-- The Qualcomm IPQ807x platform and the Xiaomi AX3600 router for the hardware support.
-- The community over at the [OpenWrt forum](https://forum.openwrt.org/t/ipq807x-nss-build/148529) for their valuable contributions and resources. 
-- [rodriguezst](https://github.com/rodriguezst) for his [ipq807x-openwrt-builder](https://github.com/rodriguezst/ipq807x-openwrt-builder)
-- And a special thanks to [qosmio](https://github.com/qosmio) for the main NSS development
+- 设置ip
+```
+setenv serverip 192.168.1.11
+setenv ipaddr 192.168.1.1
+```
+- 启动web刷机
+```
+httpd 192.168.1.1/24
+```
+- 备份旧固件
+```
+mmc dev 0
+mmc read 0x44000000 0x0 0x2c622
+tftpput 0x44000000 0x58c4400 backup.img
+```
+- 恢复旧固件
+```
+dd if=backup.img of=/dev/mmcblk0 bs=512 count=181794
+```
+或者在uboot
+```
+mmc dev
+tftpboot 0x44000000 backup.img
+mmc write 0x44000000 0x0 0x2c622
+```
+- 刷入uboot
+```
+setenv serverip 192.168.1.11
+setenv ipaddr 192.168.1.1
+tftpboot 0x44000000 uboot.mbn
+flash 0:APPSBL
+```
+- 不刷机启动固件
+```
+setenv serverip 192.168.1.11
+setenv ipaddr 192.168.1.2
+tftpboot 0x44000000 openwrt-qualcommax-ipq50xx-jdcloud_re-cs-03-initramfs-uImage.itb
+bootm 0x44000000
+```
