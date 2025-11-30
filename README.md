@@ -2,6 +2,12 @@
 
 本项目自动编译京东云后羿(/哪吒) ，型号RE-CS-03(IPQ5018平台)的固件，OpenWRT官方源码。
 
+
+|   Snapshots   |   |
+| ------------- | ------------- |
+|![](images/ScreenShot_2025-11-30_005224_810.png)|![](images/ScreenShot_2025-11-30_005745_918.png)|
+|![](images/ScreenShot_2025-11-30_005550_998.png)|![](images/ScreenShot_2025-11-30_005637_027.png)|
+
 ## 特点
 
 - [OpenWRT](https://github.com/openwrt/openwrt)官方源码，和设备专用补丁
@@ -22,7 +28,8 @@ UBoot刷好之后都可以按上面步骤4进入web刷机界面
 
 固件刷好后，可以在Luci的升级界面刷入sysupgrade.bin进行固件更新
 
-## 有用的UBOOT指令
+<details>
+<summary>有用的UBOOT指令</summary>
 
 - 设置ip
 ```
@@ -63,3 +70,7 @@ setenv ipaddr 192.168.1.2
 tftpboot 0x44000000 openwrt-qualcommax-ipq50xx-jdcloud_re-cs-03-initramfs-uImage.itb
 bootm 0x44000000
 ```
+</details>
+
+## 鼓励一下
+[送朵小花](images/readme.md)
