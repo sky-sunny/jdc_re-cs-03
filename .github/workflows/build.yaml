@@ -83,7 +83,7 @@ jobs:
         run: |
           df -hT
           #gh api -H "Accept: application/vnd.github.raw+json" /repos/pmyy-wt/jdcloud_re-cs-03/contents/re-cs-03-nss.patch --jq '.content' -F ref=main | base64 --decode > re-cs-03-nss.patch
-          curl -H "Authorization: token ${PAT_TOKEN}" -OL "https://raw.githubusercontent.com/pmyy-wt/jdcloud_re-cs-03/6d16b417576deb625249cc1ad641c62e3e75d933/re-cs-03-mainline.patch"
+          curl -H "Authorization: token ${PAT_TOKEN}" -OL "https://raw.githubusercontent.com/pmyy-wt/jdcloud_re-cs-03/b40ad671ee36bb6cc86b535b1afc102fdcaaea71/re-cs-03-mainline.patch"
           ls -al re-cs-03-mainline.patch && sha256sum re-cs-03-mainline.patch
           git apply --verbose --ignore-space-change re-cs-03-mainline.patch
             
