@@ -69,23 +69,12 @@ jobs:
         run: |
           df -hT
           if [ -d "builder_repo/patches" ] && [ "$(ls -A builder_repo/patches 2>/dev/null)" ]; then
-            mv builder_repo/patches/* ./
-            for patch in *.patch; do
+            for patch in builder_repo/patches/*.patch; do
               echo "Applying patch $patch ..."
+              ls -al "$patch" && sha256sum "$patch"
               [ -f "$patch" ] && git apply --verbose "$patch"
             done
           fi
-
-      - name: Patch for RE-CS-03
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PAT_TOKEN: ${{ secrets.FETCH }}
-        run: |
-          df -hT
-          #gh api -H "Accept: application/vnd.github.raw+json" /repos/pmyy-wt/jdcloud_re-cs-03/contents/re-cs-03-nss.patch --jq '.content' -F ref=main | base64 --decode > re-cs-03-nss.patch
-          curl -H "Authorization: token ${PAT_TOKEN}" -OL "https://raw.githubusercontent.com/pmyy-wt/jdcloud_re-cs-03/b40ad671ee36bb6cc86b535b1afc102fdcaaea71/re-cs-03-mainline.patch"
-          ls -al re-cs-03-mainline.patch && sha256sum re-cs-03-mainline.patch
-          git apply --verbose --ignore-space-change re-cs-03-mainline.patch
             
       - name: Update and install feeds
         run: |
@@ -211,7 +200,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           df -hT
-          gh api repos/${{ github.repository }}/releases --paginate --jq '.[5:] | .[] | "\(.id) \(.tag_name)"' | while read id tag; do
-            echo "Removing old release $tag ..."
-            gh api -X DELETE "repos/${{ github.repository }}/releases/$id" && gh api -X DELETE "repos/${{ github.repository }}/git/refs/tags/$tag" 2>/dev/null || true
+          gh api repos/${{ github.repository }}/releases --paginate --jq '.[5:10] | .[] | "\(.id) \(.tag_name)"' | while read id tag; do
+            day=$(echo "tag" |cut -d'-' -f4)
+            if [ $day -ne "01" ] && [ $day -ne "16" ]; then
+              echo "Removing old release $tag ..."
+              gh api -X DELETE "repos/${{ github.repository }}/releases/$id" && gh api -X DELETE "repos/${{ github.repository }}/git/refs/tags/$tag" 2>/dev/null || true
+            fi
           done
