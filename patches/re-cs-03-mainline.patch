@@ -38,7 +38,7 @@ index d4169fa663..41cffddd79 100644
  
  config_load ubootenv
 diff --git a/package/firmware/ipq-wifi/Makefile b/package/firmware/ipq-wifi/Makefile
-index 8268970c4f..893d7d4e13 100644
+index 47b2f8788b..3076eb7ff4 100644
 --- a/package/firmware/ipq-wifi/Makefile
 +++ b/package/firmware/ipq-wifi/Makefile
 @@ -16,6 +16,11 @@ include $(INCLUDE_DIR)/package.mk
@@ -61,7 +61,7 @@ index 8268970c4f..893d7d4e13 100644
  	linksys_homewrk \
  	linksys_mr5500 \
  	linksys_mr6350 \
-@@ -224,6 +230,7 @@ $(eval $(call generate-ipq-wifi-package,glinet_gl-axt1800,GL.iNet GL-AXT1800))
+@@ -225,6 +231,7 @@ $(eval $(call generate-ipq-wifi-package,glinet_gl-axt1800,GL.iNet GL-AXT1800))
  $(eval $(call generate-ipq-wifi-package,glinet_gl-b3000,GL.iNet GL-B3000))
  $(eval $(call generate-ipq-wifi-package,ignitenet_ss-w2-ac2600,Ignitenet SS-W2-AC2600))
  $(eval $(call generate-ipq-wifi-package,iodata_wn-dax3000gr,I-O DATA WN-DAX3000GR))
@@ -421,10 +421,10 @@ HcmV?d00001
 
 diff --git a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq5018-re-cs-03.dts b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq5018-re-cs-03.dts
 new file mode 100644
-index 0000000000..3154fc1d5f
+index 0000000000..16d465448d
 --- /dev/null
 +++ b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq5018-re-cs-03.dts
-@@ -0,0 +1,360 @@
+@@ -0,0 +1,386 @@
 +/dts-v1/;
 +
 +#include "ipq5018.dtsi"
@@ -760,6 +760,32 @@ index 0000000000..3154fc1d5f
 +	};
 +};
 +
++&q6v5_wcss {
++	//compatible = "qcom,ipq5018-q6-mpd";
++	//reg = <0x0cd00000 0x4040>;
++
++	//clocks = <&gcc GCC_XO_CLK>,
++	//	 <&gcc GCC_SLEEP_CLK_SRC>,
++	//	 <&gcc GCC_SYS_NOC_WCSS_AHB_CLK>;
++	///delete-property/ clock-names;
++
++	/* The QCN6102 radio should map to UPD ID 2. Without       */
++	/* bootargs, the firmware will expect it to be on UPD ID 3 */
++	boot-args = <
++		/*       type:	*/	0x2	/* PCIE0	*/
++		/*     length:	*/	4
++		/*     UPD ID:	*/	2
++		/* reset GPIO:	*/	15
++		/*   reserved:	*/	0 0>;
++
++	/*glink-edge {
++		qrtr_requests {
++			qcom,glink-channels = "IPCRTR";
++		};
++	};*/
++};
++
++
 +&wifi {
 +	// IPQ5018
 +	status = "okay";
@@ -769,16 +795,16 @@ index 0000000000..3154fc1d5f
 +	qcom,ath11k-calibration-variant = "JDC-RE-CS-03";
 +	qcom,ath11k-fw-memory-mode = <1>;
 +	qcom,bdf-addr = <0x4c400000>;
-+	qcom,caldb-addr = <0x4c400000>;
-+	qcom,m3-dump-addr = <0x4d100000>;
++	//qcom,caldb-addr = <0x4c400000>;
++	//qcom,m3-dump-addr = <0x4d100000>;
 +};
 +
 +&wifi1 {
 +	// QCN6102 5G
 +	status = "okay";
 +
-+	qcom,rproc = <&q6_wcss_pd3>;
-+	qcom,userpd-subsys-name = "q6v5_wcss_userpd3";
++	qcom,rproc = <&q6_wcss_pd2>;
++	qcom,userpd-subsys-name = "q6v5_wcss_userpd2";
 +	qcom,ath11k-calibration-variant = "JDC-RE-CS-03";
 +	qcom,ath11k-fw-memory-mode = <1>;
 +	qcom,bdf-addr = <0x4d100000>;
