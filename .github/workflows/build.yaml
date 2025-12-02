@@ -201,7 +201,7 @@ jobs:
         run: |
           df -hT
           gh api repos/${{ github.repository }}/releases --paginate --jq '.[5:10] | .[] | "\(.id) \(.tag_name)"' | while read id tag; do
-            day=$(echo "tag" |cut -d'-' -f4)
+            day=$(echo "$tag" |cut -d'-' -f4)
             if [ $day -ne "01" ] && [ $day -ne "16" ]; then
               echo "Removing old release $tag ..."
               gh api -X DELETE "repos/${{ github.repository }}/releases/$id" && gh api -X DELETE "repos/${{ github.repository }}/git/refs/tags/$tag" 2>/dev/null || true
