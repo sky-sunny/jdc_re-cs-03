@@ -55,8 +55,8 @@ index 47b2f8788b..3076eb7ff4 100644
  #
 @@ -46,6 +51,7 @@ ALLWIFIBOARDS:= \
  	iodata_wn-dax3000gr \
-  jdcloud_re-cs-02 \
-  jdcloud_re-ss-01 \
+ 	jdcloud_re-cs-02 \
+ 	jdcloud_re-ss-01 \
 +	jdcloud_re-cs-03 \
  	linksys_homewrk \
  	linksys_mr5500 \
